@@ -1,5 +1,5 @@
 # Copyright 2016 Niek Temme.
-#
+# Authors: Anson Long-Seabra, Jay Kelner, Alec Reudi, Nick Temme
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,18 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# This code was adapted from Niek Temme's blog post, which can be found at
+# https://niektemme.com/2016/02/21/tensorflow-handwriting/ 
+# Nick's code does most of the heavy-lifting, along with TensorFlow, a Google API
+# 
 # ==============================================================================
 
-"""Predict a handwritten integer (MNIST beginners).
-
-Script requires
-1) saved model (model.ckpt file) in the same location as the script is run from.
-(requried a model created in the MNIST beginners tutorial)
-2) one argument (png file location of a handwritten integer)
-
-Documentation at:
-http://niektemme.com/ @@to do
-"""
 
 #import modules
 import sys
@@ -30,46 +25,12 @@ import time
 import tensorflow as tf
 from PIL import Image,ImageFilter
 import os
-#import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-class Predictor(object):
-
-		
-
-	def predictint(self, imvalue):
-		"""
-		This function returns the predicted integer.
-		The imput is the pixel values from the imageprepare() function.
-		"""
-
-		# Define the model (same as when creating the model file)
-		x = tf.placeholder(tf.float32, [None, 784])
-		W = tf.Variable(tf.zeros([784, 10]), name="W")
-		b = tf.Variable(tf.zeros([10]), name="b")
-		y = tf.nn.softmax(tf.matmul(x, W) + b)
-
-		init_op = tf.initialize_all_variables()
-		saver = tf.train.Saver()
-
-		"""
-		Load the model.ckpt file
-		file is stored in the same directory as this python script is started
-		Use the model to predict the integer. Integer is returend as list.
-
-		Based on the documentatoin at
-		https://www.tensorflow.org/versions/master/how_tos/variables/index.html
-		"""
-
-		#tf.print_tensors_in_checkpoint_file()
-		with tf.Session() as sess:
-			sess.run(init_op)
-			saver.restore(sess, "model.ckpt")
-			#print ("Model restored.")
-
-			prediction=tf.argmax(y,1)
-			return prediction.eval(feed_dict={x: [imvalue]}, session=sess)
-
+"""
+The Predictor class takes an
+"""
+class ImageUtil(object):	
 
 	def imageprepare(self, argv):
 		"""
@@ -197,20 +158,27 @@ class ModelCreator(object):
 
 			
 			i = 0
+			j = 9
+			resultsDict = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0}
 			for filename in os.listdir(self.directory):
 				fullPath = os.path.abspath(os.path.join(self.directory, filename))
+				firstChar = fullPath[0]
 				if fullPath.lower().endswith('.png'):
-					imvalue = Predictor().imageprepare(fullPath)
+					imvalue = ImageUtil().imageprepare(fullPath)
 					prediction=tf.argmax(y,1)
-					print filename + str(i) + " is a " + str(prediction.eval(feed_dict={x: [imvalue]}, session=sess)[0])
+					print filename + " is a " + str(prediction.eval(feed_dict={x: [imvalue]}, session=sess)[0])
 					i += 1
-
-			#save_path = saver.save(sess, "model.ckpt")
-			#print ("Model saved in file: ", save_path)
-			#print("SAVING PATH IS " + os.path.abspath(save_path))
-			#saved = file('model.ckpt')
-			#saved.close()
-
+					if (firstChar == j):
+						resultsDict[j] += 1
+					if (i == 700):
+						i = 0
+						j += 1
+			k = 9
+			total = 0
+			for k in range(k..9):
+				print("For digit " + str(k) + " the accuracy was " + str(resultsDict[k] / 700))
+				total += correct
+			print("Total accuracy was " + str(total / 7000))
 
 def main():
 
