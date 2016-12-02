@@ -14,7 +14,7 @@
 #
 # This code was adapted from Niek Temme's blog post, which can be found at
 # https://niektemme.com/2016/02/21/tensorflow-handwriting/ 
-# Nick's code does most of the heavy-lifting, along with TensorFlow, a Google API
+# Niek's code does most of the heavy-lifting, along with TensorFlow, a Google API
 # 
 # ==============================================================================
 
@@ -28,7 +28,8 @@ import os
 from tensorflow.examples.tutorials.mnist import input_data
 
 """
-The Predictor class takes an
+The ImageUtil class allows for normalization of images into 28 x 28. This is Niek's
+code, but we wrapped in in an object for our use.
 """
 class ImageUtil(object):	
 
@@ -79,9 +80,6 @@ class ImageUtil(object):
 		predint = self.predictint(imvalue)
 		print ("The digit drawn in " + self.filename + "is a " + str(predint[0])) #first value in list
 
-	#if __name__ == "__main__":
-	#    main(self.filename)
-
 
 # Copyright 2016 Niek Temme.
 # Adapted form the on the MNIST biginners tutorial by Google.
@@ -109,13 +107,16 @@ https://www.tensorflow.org/versions/master/tutorials/mnist/beginners/index.html
 """
 """
 Modified by Anson Long-Seabra, Jay Kelner, Daniel Aiken, and Alec Ruedi
-Our simple modification allows the gradient descent optimizer to be modified.
+Our simple modification allows the gradient descent optimizer to be used as a parameter.
 This allows us to see which values yield the best results.
 """
 #import modules
 
 #import tensorflow as tf
-
+"""
+The ModelCreator builds our neural net using TensorFlow. Again, a lot of Niek's code,
+but we made it object-oriented and added a few tweaks.
+"""
 class ModelCreator(object):
 
 	def __init__(self, opt, directory):
@@ -137,6 +138,8 @@ class ModelCreator(object):
 		#optimizer = sys.argv[1]
 		y_ = tf.placeholder(tf.float32, [None, 10])
 		cross_entropy = -tf.reduce_sum(y_*tf.log(y))
+
+		#Here we changed the code to allow the optimizer to be changed
 		train_step = tf.train.GradientDescentOptimizer(self.optimizer).minimize(cross_entropy)
 
 		init_op = tf.initialize_all_variables()
@@ -156,46 +159,57 @@ class ModelCreator(object):
 				batch_xs, batch_ys = mnist.train.next_batch(100)
 				sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
-			
+			#Now the training is done and the model is ready to be tested
+
+			#This code is exclusively added by the group
 			i = 0
-			j = 9
+			j = 0
+
+			#A dictionary to store our accuracy in
 			resultsDict = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0}
+			
+			#Keep track of how well our model is doing
 			for filename in os.listdir(self.directory):
 				fullPath = os.path.abspath(os.path.join(self.directory, filename))
-				firstChar = fullPath[0]
 				if fullPath.lower().endswith('.png'):
+					firstChar = int(filename[0])
 					imvalue = ImageUtil().imageprepare(fullPath)
 					prediction=tf.argmax(y,1)
 					print filename + " is a " + str(prediction.eval(feed_dict={x: [imvalue]}, session=sess)[0])
 					i += 1
-					if (firstChar == j):
+
+					#In our test data, the first character of the filename corresponds to the
+					#correct identification of the file
+					if (firstChar == prediction.eval(feed_dict={x: [imvalue]}, session=sess)[0]):
 						resultsDict[j] += 1
 					if (i == 700):
 						i = 0
 						j += 1
-			k = 9
 			total = 0
-			for k in range(k..9):
-				print("For digit " + str(k) + " the accuracy was " + str(resultsDict[k] / 700))
-				total += correct
-			print("Total accuracy was " + str(total / 7000))
 
+			#Print the accuracy
+			for k in range(0, 10):
+				print("For digit " + str(k) + " the accuracy was " + str(resultsDict[k] / 700.0))
+				total += resultsDict[k]
+			print("Total accuracy was " + str(total / 7000.0))
+
+"""
+The main program was written exclusively by us. It ties all of of the code together in 
+an easy-to-use script
+"""
 def main():
 
 	print("Welcome to Anson, Jay, Daniel, and Alec's CS480 Final Project.")
 	print("Today we will be using a neural network to identify handwritten digits.")
 
-	directory = input("Please enter the name of the directory that holds your files: ")
+	directory = input("Please enter the name of the directory that holds your files, in quotes: ")
 	directory = str.strip(directory)
 
-	gradient = input("What is the gradient descent you would like to use on your neural network?: ")
+	gradient = input("What is the gradient descent you would like to use on your neural network? Ex: 0.01 (No quotes): ")
 
 
 	mCreator = ModelCreator(gradient, directory)
 	mCreator.createModel()
-
-
-
 
 main()
 
