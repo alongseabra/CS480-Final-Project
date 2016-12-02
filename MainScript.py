@@ -202,7 +202,7 @@ class ModelCreator(object):
 				if fullPath.lower().endswith('.png'):
 					imvalue = Predictor().imageprepare(fullPath)
 					prediction=tf.argmax(y,1)
-					print "File #" + str(i) + " is a " + str(prediction.eval(feed_dict={x: [imvalue]}, session=sess)[0])
+					print filename + str(i) + " is a " + str(prediction.eval(feed_dict={x: [imvalue]}, session=sess)[0])
 					i += 1
 
 			#save_path = saver.save(sess, "model.ckpt")
