@@ -157,8 +157,9 @@ This allows us to see which values yield the best results.
 
 class ModelCreator(object):
 
-	def __init__(self, opt):
+	def __init__(self, opt, directory):
 		self.optimizer = opt
+		self.directory = directory
 
 	def createModel(self):
 
@@ -191,15 +192,18 @@ class ModelCreator(object):
 		with tf.Session() as sess:
 			sess.run(init_op)
 			for i in range(1000):
-				print()
 				batch_xs, batch_ys = mnist.train.next_batch(100)
 				sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
 			
-
-			imvalue = Predictor().imageprepare('seven2.png')
-			prediction=tf.argmax(y,1)
-			print prediction.eval(feed_dict={x: [imvalue]}, session=sess)
+			i = 0
+			for filename in os.listdir(self.directory):
+				fullPath = os.path.abspath(os.path.join(self.directory, filename))
+				if fullPath.lower().endswith('.png'):
+					imvalue = Predictor().imageprepare(fullPath)
+					prediction=tf.argmax(y,1)
+					print "File #" + str(i) + " is a " + str(prediction.eval(feed_dict={x: [imvalue]}, session=sess)[0])
+					i += 1
 
 			#save_path = saver.save(sess, "model.ckpt")
 			#print ("Model saved in file: ", save_path)
@@ -213,27 +217,15 @@ def main():
 	print("Welcome to Anson, Jay, Daniel, and Alec's CS480 Final Project.")
 	print("Today we will be using a neural network to identify handwritten digits.")
 
-	name = input("Please enter the name of the file you want to identify: ")
-	#name = str.strip(directory)
+	directory = input("Please enter the name of the directory that holds your files: ")
+	directory = str.strip(directory)
 
 	gradient = input("What is the gradient descent you would like to use on your neural network?: ")
 
 
-	mCreator = ModelCreator(gradient)
+	mCreator = ModelCreator(gradient, directory)
 	mCreator.createModel()
 
-	"""
-	for filename in os.listdir(directory):
-		fullPath = os.path.abspath(os.path.join(directory, filename))
-
-		if fullPath.lower().endswith('.png'):
-			print(fullPath)
-			p.main(fullPath)
-	"""
-	#p = Predictor()
-
-	#fullPath = os.path.abspath(name)
-	#p.main(fullPath)
 
 
 
